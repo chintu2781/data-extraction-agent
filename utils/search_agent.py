@@ -12,12 +12,18 @@ def search_web(query):
 def extract_info_from_text(text, prompt):
     """Extract relevant information from web search results using OpenAI API."""
     openai.api_key = "YOUR_OPENAI_API_KEY"
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt + text,
-        max_tokens=100
+
+    # Use the new chat completions API
+    response = openai.chat_completions.create(
+        model="gpt-3.5-turbo",  # Or you can use another model (e.g., "gpt-4" if available)
+        messages=[
+            {"role": "system", "content": "You are an assistant that extracts relevant information from web search results."},
+            {"role": "user", "content": prompt + text}
+        ]
     )
-    return response['choices'][0]['text'].strip()
+    
+    # Extract the text content from the response
+    return response['choices'][0]['message']['content'].strip()
 
 def search_web_and_extract_info(data, column, query_template):
     """Perform searches and extract information for each entity in the selected column."""
@@ -29,4 +35,3 @@ def search_web_and_extract_info(data, column, query_template):
         result = extract_info_from_text(context_text, f"Extract info for {entity}: ")
         results.append((entity, result))
     return pd.DataFrame(results, columns=[column, "Extracted Info"])
-

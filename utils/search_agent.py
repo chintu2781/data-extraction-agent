@@ -4,6 +4,7 @@ from transformers import pipeline
 import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from dotenv import load_dotenv
 
 # Initialize Hugging Face pipeline for question answering
 qa_pipeline = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")

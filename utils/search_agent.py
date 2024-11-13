@@ -16,14 +16,15 @@ def extract_info_from_text(text, prompt):
     openai.api_key = "YOUR_OPENAI_API_KEY"
     
     # Use the new chat completions API
-    response = openai.chat_completions.create(
-        model="gpt-3.5-turbo",  # or another model like "gpt-4"
-        messages=[
-            {"role": "system", "content": "You are an assistant that extracts relevant information from web search results."},
-            {"role": "user", "content": prompt + text}
-        ]
-    )
-    
+    response = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",  # Or any other model you want to use
+    messages=[
+        {"role": "system", "content": "You are an assistant that extracts information from text."},
+        {"role": "user", "content": prompt + text}
+    ]
+)
+
+
     # Extract the text content from the response
     return response['choices'][0]['message']['content'].strip()
 

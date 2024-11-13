@@ -11,22 +11,24 @@ def search_web(query):
 
 
 
+
 def extract_info_from_text(text, prompt):
-    """Extract relevant information from web search results using OpenAI API."""
+    """Extract relevant information from web search results using OpenAI."""
+    
     openai.api_key = "YOUR_OPENAI_API_KEY"
     
     # Use the new chat completions API
-    response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",  # Or any other model you want to use
-    messages=[
-        {"role": "system", "content": "You are an assistant that extracts information from text."},
-        {"role": "user", "content": prompt + text}
-    ]
-)
+    response = openai.chat_completions.create(
+        model="gpt-3.5-turbo",  # or another model like "gpt-4"
+        messages=[
+            {"role": "system", "content": "You are an assistant that extracts relevant information."},
+            {"role": "user", "content": prompt + text}
+        ]
+    )
 
-
-    # Extract the text content from the response
-    return response['choices'][0]['message']['content'].strip()
+    # Extract and return the response content
+    result = response['choices'][0]['message']['content']
+    return result
 
 
 def search_web_and_extract_info(data, column, query_template):

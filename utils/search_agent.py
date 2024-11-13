@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 from transformers import pipeline
 import os
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 # Initialize Hugging Face pipeline for question answering
 qa_pipeline = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")
@@ -12,15 +14,18 @@ def search_web(query):
     if not api_key:
         print("Error: SERPAPI_KEY environment variable not found.")
         return []
-    
+    print(f"Using API key: {api_key[:4]}****")
     url = f"https://serpapi.com/search.json?q={query}&api_key={api_key}"
+    session = requests.Session()
+    retries = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+    session.mount("https://", HTTPAdapter(max_retries=retries))
     try:
         response = requests.get(url)
         response.raise_for_status()
         return response.json().get("organic_results", [])
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.RequestException as e:
         print(f"Error in search_web: {e}")
-        return [] # Return an empty list if there's an error
+        return []# Return an empty list if there's an error
 
 def extract_info_from_text(text, prompt):
     """Extract relevant information from web search results using Hugging Face transformers."""

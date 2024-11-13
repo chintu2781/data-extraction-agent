@@ -20,17 +20,22 @@ def search_web(query):
     retries = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
     session.mount("https://", HTTPAdapter(max_retries=retries))
     try:
-        response = requests.get(url)
+        response = session.get(url)
         response.raise_for_status()
-        return response.json().get("organic_results", [])
+        results = response.json().get("organic_results", [])
+        if not results:
+            print("No organic results found in API response.")
+        return results
     except requests.exceptions.RequestException as e:
         print(f"Error in search_web: {e}")
-        return []# Return an empty list if there's an error
+        return []
 
 def extract_info_from_text(text, prompt):
     """Extract relevant information from web search results using Hugging Face transformers."""
     try:
+        print(f"Extracting with prompt: '{prompt}' and context: '{text[:200]}...'")  # Print first 200 characters of text
         result = qa_pipeline(question=prompt, context=text)
+        print("Extraction result:", result)
         return result.get('answer', 'No answer found')
     except Exception as e:
         print(f"Error in extract_info_from_text: {e}")
@@ -42,6 +47,9 @@ def search_web_and_extract_info(data, column, query_template):
     for entity in data[column]:
         query = query_template.replace("{Company}", entity)
         search_results = search_web(query)
+
+        # Debug print to check if search results are coming through
+        print(f"Search results for {entity}: {search_results}")
         
         if not search_results:
             print(f"No search results found for {entity}")
@@ -49,6 +57,9 @@ def search_web_and_extract_info(data, column, query_template):
             continue
 
         context_text = " ".join([res.get("snippet", "") for res in search_results if "snippet" in res])
+
+        # Debug print for context_text
+        print(f"context_text for {entity}: '{context_text}'")
         
         if not context_text:
             print(f"No context text available for {entity}")
@@ -59,6 +70,7 @@ def search_web_and_extract_info(data, column, query_template):
         results.append((entity, result))
 
     return pd.DataFrame(results, columns=[column, "Extracted Info"])
+
 
 
 # Example usage:

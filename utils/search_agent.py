@@ -1,5 +1,6 @@
 import requests
 import openai
+import pandas as pd
 
 def search_web(query):
     """Use SerpAPI or similar API to perform web search."""

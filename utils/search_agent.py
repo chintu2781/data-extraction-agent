@@ -9,6 +9,10 @@ qa_pipeline = pipeline("question-answering", model="distilbert-base-cased-distil
 def search_web(query):
     """Use SerpAPI or similar API to perform web search."""
     api_key = os.getenv("SERPAPI_KEY")
+    if not api_key:
+        print("Error: SERPAPI_KEY environment variable not found.")
+        return []
+    
     url = f"https://serpapi.com/search.json?q={query}&api_key={api_key}"
     try:
         response = requests.get(url)
@@ -16,7 +20,7 @@ def search_web(query):
         return response.json().get("organic_results", [])
     except requests.exceptions.HTTPError as e:
         print(f"Error in search_web: {e}")
-        return []  # Return an empty list if there's an error
+        return [] # Return an empty list if there's an error
 
 def extract_info_from_text(text, prompt):
     """Extract relevant information from web search results using Hugging Face transformers."""
@@ -34,15 +38,13 @@ def search_web_and_extract_info(data, column, query_template):
         query = query_template.replace("{Company}", entity)
         search_results = search_web(query)
         
-        # Check if there are any snippets returned; if not, skip to the next entity
         if not search_results:
             print(f"No search results found for {entity}")
             results.append((entity, "No information found"))
             continue
 
         context_text = " ".join([res.get("snippet", "") for res in search_results if "snippet" in res])
-
-        # If context_text is empty, avoid calling the extraction function
+        
         if not context_text:
             print(f"No context text available for {entity}")
             results.append((entity, "No information found"))

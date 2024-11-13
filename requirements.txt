@@ -3,6 +3,5 @@ pandas
 requests
 transformers
 torch
-
-
+python-dotenv
 
